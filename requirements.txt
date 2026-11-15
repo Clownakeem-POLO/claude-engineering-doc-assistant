@@ -1,0 +1,5 @@
+anthropic>=0.40
+streamlit
+pypdf
+pandas
+pytest

@@ -23,16 +23,13 @@ st.set_page_config(page_title="Engineering Doc Assistant", page_icon="book", lay
 MODEL = os.environ.get("ANTHROPIC_MODEL", analyzer.DEFAULT_MODEL)
 
 
-@st.cache_resource
-def get_client():
-    """Build the Anthropic client once. Returns None if the key is missing."""
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+def build_client(api_key):
+    """Build an Anthropic client for the given key, or None when there is no key."""
+    if not api_key:
         return None
     import anthropic
-    return anthropic.Anthropic()
+    return anthropic.Anthropic(api_key=api_key)
 
-
-client = get_client()
 
 st.title("Engineering document assistant")
 st.caption(
@@ -41,17 +38,27 @@ st.caption(
     "for analysis and is not stored by this app."
 )
 
-if client is None:
-    st.warning(
-        "No ANTHROPIC_API_KEY found. Set it in your environment (or in the app's secrets on "
-        "Streamlit Cloud) and reload. The app does the rest."
-    )
-
 with st.sidebar:
+    st.subheader("Anthropic API key")
+    key_input = st.text_input(
+        "Your API key",
+        type="password",
+        help="Used only for this session to call the API, never stored. Get one at "
+             "console.anthropic.com.",
+    )
     st.subheader("Document")
     uploaded = st.file_uploader("Upload a PDF or text file", type=["pdf", "txt", "md"])
     pasted = st.text_area("Or paste text", height=200, placeholder="Paste a datasheet here...")
     st.caption(f"Model: `{MODEL}`")
+
+api_key = key_input.strip() or os.environ.get("ANTHROPIC_API_KEY", "")
+client = build_client(api_key)
+
+if client is None:
+    st.info(
+        "Enter your Anthropic API key in the sidebar to use the app. The key is used only to "
+        "make calls for your own session and is not stored. Get one at console.anthropic.com."
+    )
 
 document = ""
 if uploaded is not None:
@@ -69,7 +76,7 @@ tab_summary, tab_ask, tab_extract = st.tabs(["Summary", "Ask a question", "Extra
 
 def guard():
     if client is None:
-        st.error("Set ANTHROPIC_API_KEY first.")
+        st.error("Enter your Anthropic API key in the sidebar first.")
         return False
     if not document:
         st.info("Add a document in the sidebar to begin.")

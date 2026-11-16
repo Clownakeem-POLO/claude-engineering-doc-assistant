@@ -1,5 +1,8 @@
 # Engineering document assistant
 
+**Live demo:** https://clownakeem-doc-assistant.streamlit.app
+(Bring your own Anthropic API key: paste it in the sidebar. It is used only for your session and is never stored, so the public demo costs nothing to host.)
+
 A small app that reads an engineering document, a datasheet, a maintenance manual, a
 technical report, and does three things with it: summarizes it, answers questions about it,
 and pulls its specifications into a table you can download. It runs on the Claude API.
